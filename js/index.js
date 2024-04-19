@@ -66,7 +66,7 @@ document.getElementById('search-form').addEventListener('submit', async function
         <p>Language: ${repo.language || 'Unknown'}</p>
         <p>Stars: ${repo.stargazers_count}</p>
       `;
-      repoList.appendChild(repoDiv)
+      repoList.appendChild(repoDiv);
     });
   }
   
