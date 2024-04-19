@@ -1,70 +1,72 @@
-document.getElementById('github-form').addEventListener('submit', async function(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
+document.getElementById('search-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const searchTerm = document.getElementById('search-input').value.trim();
+    if (searchTerm === '') return;
   
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchTerm = urlParams.get('search');
-  
-    if (searchTerm) {
-      try {
-        // Search for users
-        const response = await fetch(`https://api.github.com/search/users?q=${searchTerm}`, {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
-        const data = await response.json();
-        displayUsers(data.items);
-      } catch (error) {
-        console.error('Error searching for users:', error);
-      }
+    try {
+      const users = await searchUsers(searchTerm);
+      displayUsers(users);
+    } catch (error) {
+      console.error('Error searching for users:', error);
     }
   });
   
+  async function searchUsers(username) {
+    const response = await fetch(`https://api.github.com/search/users?q=${username}`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    const data = await response.json();
+    return data.items;
+  }
+  
   async function displayUsers(users) {
     const userList = document.getElementById('user-list');
-    userList.innerHTML = ''; // Clear previous results
+    userList.innerHTML = '';
   
     users.forEach(user => {
-      const listItem = document.createElement('li');
-      listItem.innerHTML = `
+      const userDiv = document.createElement('div');
+      userDiv.innerHTML = `
         <img src="${user.avatar_url}" alt="Avatar" width="50">
         <a href="${user.html_url}" target="_blank">${user.login}</a>
-        <button onclick="showUserRepos('${user.login}')">Show Repos</button>
+        <button onclick="showRepos('${user.login}')">Show Repos</button>
       `;
-      userList.appendChild(listItem);
+      userList.appendChild(userDiv);
     });
   }
   
-  async function showUserRepos(username) {
+  async function showRepos(username) {
     try {
-      // Fetch user's repositories
-      const response = await fetch(`https://api.github.com/users/${username}/repos`, {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
-      const repos = await response.json();
+      const repos = await fetchUserRepos(username);
       displayRepos(repos);
     } catch (error) {
       console.error('Error fetching user repositories:', error);
     }
   }
   
+  async function fetchUserRepos(username) {
+    const response = await fetch(`https://api.github.com/users/${username}/repos`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    return response.json();
+  }
+  
   function displayRepos(repos) {
-    const reposList = document.getElementById('repos-list');
-    reposList.innerHTML = ''; // Clear previous results
+    const repoList = document.getElementById('repo-list');
+    repoList.innerHTML = '';
   
     repos.forEach(repo => {
-      const listItem = document.createElement('li');
-      listItem.innerHTML = `
-        <strong>${repo.name}</strong>: ${repo.description || 'No description'}
-        <br>
-        Language: ${repo.language || 'Unknown'}
-        <br>
-        Stars: ${repo.stargazers_count}
-        <hr>
+      const repoDiv = document.createElement('div');
+      repoDiv.innerHTML = `
+        <h3>${repo.name}</h3>
+        <p>${repo.description || 'No description'}</p>
+        <p>Language: ${repo.language || 'Unknown'}</p>
+        <p>Stars: ${repo.stargazers_count}</p>
       `;
-      reposList.appendChild(listItem);
+      repoList.appendChild(repoDiv)
     });
   }
   
